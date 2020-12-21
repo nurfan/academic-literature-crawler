@@ -1,0 +1,20 @@
+[
+    {
+      "path": "/v1/articles",
+      "method": "POST",
+      "module": "article",
+      "endpoint_filter": "create_article"
+    },
+    {
+      "path": "/v1/articles",
+      "method": "GET",
+      "module": "article",
+      "endpoint_filter": "read_article"
+    },
+    {
+      "path": "/v1/harvest",
+      "method": "GET",
+      "module": "harvest",
+      "endpoint_filter": "harvest_archive"
+    }
+]
