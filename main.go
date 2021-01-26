@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/nurfan/academic-literature-crawler/lib/database/elasticsearch"
+	"github.com/nurfan/academic-literature-crawler/lib/workerpool"
 	"github.com/nurfan/academic-literature-crawler/route"
 
 	"github.com/joho/godotenv"
@@ -27,7 +29,16 @@ func init() {
 }
 
 func main() {
-	e := route.Init()
+
+	workerpool.NewDispatcher(100, 999).Run()
+
+	// Create a client
+	elasticConn, err := elasticsearch.GetConnection()
+	if err != nil {
+		log.Panic("elastic.NewClient() ERROR: ", err)
+	}
+
+	e := route.Init(elasticConn)
 	data, err := json.MarshalIndent(e.Routes(), "", "  ")
 	if err != nil {
 		log.Panic(fmt.Sprint(err))

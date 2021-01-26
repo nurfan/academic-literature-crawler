@@ -1,8 +1,9 @@
 package route
 
 import (
-	article "github.com/nurfan/academic-literature-crawler/article/handler"
-	harvest "github.com/nurfan/academic-literature-crawler/harvest/handler"
+	a "github.com/nurfan/academic-literature-crawler/app/handler/archive"
+	h "github.com/nurfan/academic-literature-crawler/app/handler/harvest"
+	"github.com/olivere/elastic/v7"
 
 	"github.com/labstack/echo/v4"
 )
@@ -12,12 +13,15 @@ type Handler interface {
 	Handle(c echo.Context) (err error)
 }
 
-var endpoint = map[string]Handler{
+var endpoint = map[string]Handler{}
 
-	// article
-	"create_article": article.NewCreateArticle(),
-	"read_article":   article.NewReadArticle(),
+func bindingConn(conn *elastic.Client) {
+	endpoint = map[string]Handler{
 
-	//harvest
-	"harvest_archive": harvest.NewHarvestArchive(),
+		//harvest
+		"harvest_archive": h.NewHarvestArchive(conn),
+
+		//search
+		"search_archive": a.NewSearchArchive(conn),
+	}
 }

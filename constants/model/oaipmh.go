@@ -1,11 +1,11 @@
-package client
+package model
 
 import (
 	"encoding/xml"
 )
 
-// Response struct for binding oai-pmh response
-type Response struct {
+//OaiResponse Response struct for binding oai-pmh response
+type OaiResponse struct {
 	XMLName        xml.Name    `xml:"OAI-PMH"`
 	Text           string      `xml:",chardata"`
 	Xmlns          string      `xml:"xmlns,attr"`
@@ -15,6 +15,16 @@ type Response struct {
 	Request        RequestFrom `xml:"request"`
 	Error          OAIError    `xml:"error"`
 	ListRecords    ListRecord  `xml:"ListRecords"`
+}
+
+// GetListRecord getter funciton
+func (r *OaiResponse) GetListRecord() []Record {
+	return r.ListRecords.Record
+}
+
+// GetResumptionToken getter funciton
+func (r *OaiResponse) GetResumptionToken() ResumptionToken {
+	return r.ListRecords.ResumptionToken
 }
 
 // OAIError struct

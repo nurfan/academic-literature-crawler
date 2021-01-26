@@ -5,9 +5,11 @@ import (
 	"io/ioutil"
 	"log"
 
+	"github.com/olivere/elastic/v7"
+	"go.elastic.co/apm/module/apmechov4"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"go.elastic.co/apm/module/apmechov4"
 )
 
 // Route for mapping from json file
@@ -20,10 +22,11 @@ type Route struct {
 }
 
 // Init gateway router
-func Init() *echo.Echo {
+func Init(elasticConn *elastic.Client) *echo.Echo {
 	routes := loadRoutes("route/route.json")
 
 	e := echo.New()
+	bindingConn(elasticConn)
 
 	// Set Bundle MiddleWare
 	e.Use(middleware.RequestID())
