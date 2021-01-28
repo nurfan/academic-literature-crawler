@@ -23,3 +23,15 @@ func (r *APIResponse) SetSuccessResponse(code int, result map[string]interface{}
 	r.Message = http.StatusText(code)
 	r.Data = result
 }
+
+// ListArchive struct
+type ListArchive struct {
+	ArchiveID     string `json:"archive_id"`
+	OaiIdentifier string `json:"oai_identifier"`
+	Platform      string `json:"platform"`
+	Title         string `json:"title"`
+	Creator       string `json:"creator"`
+	Subject       string `json:"subject"`
+	Description   string `json:"description"`
+	Publisher     string `json:"publisher"`
+}

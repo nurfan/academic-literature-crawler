@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/nurfan/academic-literature-crawler/app/repo"
@@ -20,17 +21,27 @@ type SearchArchive struct {
 
 // Handle : handle request for this action
 func (ha *SearchArchive) Handle(c echo.Context) (err error) {
+	var pageNUmber, pageSize int = 0, 15
+
 	// create context
 	ctx := c.Request().Context()
 
 	key := c.QueryParam("keyword")
+	page := c.QueryParam("page")
+
+	pageNUmber, err = strconv.Atoi(page)
+	if err != nil {
+		pageNUmber = 0
+	}
+
+	pageNUmber = (pageNUmber + 1) * pageSize
 
 	// Search with a term query
 	termQuery := elastic.NewMultiMatchQuery(key, "title", "creator", "subject", "description", "publisher", "source").Type("phrase_prefix")
 	searchResult, err := ha.elastic.Search().
 		Index("archives").
 		Query(termQuery).
-		From(0).Size(15).
+		From(pageNUmber).Size(15).
 		Pretty(true).
 		Do(ctx)
 
@@ -65,6 +76,8 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 	//var ttyp m.Archive
 	// /searchResult.Each(reflect.TypeOf(ttyp))
 
+	var t m.ListArchive
+	var listArchive []m.ListArchive
 	// Here's how you iterate through results with full control over each step.
 	if searchResult.TotalHits() > 0 {
 
@@ -73,22 +86,24 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 			// hit.Index contains the name of the index
 
 			// Deserialize hit.Source into a Tweet (could also be just a map[string]interface{}).
-			var t m.Archive
+
 			err := json.Unmarshal(hit.Source, &t)
 			if err == nil {
-
-				result.Code = http.StatusFound
-				result.Message = http.StatusText(result.Code)
-				result.Data = map[string]interface{}{
-					"response_time": searchResult.TookInMillis,
-					"total_result":  searchResult.TotalHits(),
-					"archive":       t,
-				}
-
-				return c.JSON(result.Code, result)
+				log.Println(err)
 			}
-			log.Println(err)
+
+			listArchive = append(listArchive, t)
 		}
+
+		result.Code = http.StatusFound
+		result.Message = http.StatusText(result.Code)
+		result.Data = map[string]interface{}{
+			"response_time": searchResult.TookInMillis,
+			"total_result":  searchResult.TotalHits(),
+			"archive":       listArchive,
+		}
+
+		return c.JSON(result.Code, result)
 	}
 
 	result.Code = http.StatusNotFound
