@@ -95,7 +95,7 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 			listArchive = append(listArchive, t)
 		}
 
-		result.Code = http.StatusFound
+		result.Code = http.StatusOK
 		result.Message = http.StatusText(result.Code)
 		result.Data = map[string]interface{}{
 			"response_time": searchResult.TookInMillis,
