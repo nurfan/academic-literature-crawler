@@ -37,7 +37,7 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 	pageNUmber = (pageNUmber + 1) * pageSize
 
 	// Search with a term query
-	termQuery := elastic.NewMultiMatchQuery(key, "title", "creator", "subject", "description", "publisher", "source").Type("phrase_prefix")
+	termQuery := elastic.NewMultiMatchQuery(key, "title", "creator", "subject", "publisher", "source", "platform").Type("phrase_prefix")
 	searchResult, err := ha.elastic.Search().
 		Index("archives").
 		Query(termQuery).
@@ -60,21 +60,6 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 	}
 
 	var result m.APIResponse
-
-	// searchResult is of type SearchResult and returns hits, suggestions,
-	// and all kinds of other information from Elasticsearch.
-	//fmt.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
-
-	// Each is a convenience function that iterates over hits in a search result.
-	// It makes sure you don't need to check for nil values in the response.
-	// However, it ignores errors in serialization. If you want full control
-	// over iterating the hits, see below.
-
-	// TotalHits is another convenience function that works even when something goes wrong.
-	//fmt.Printf("Found a total of %d tweets\n", searchResult.TotalHits())
-
-	//var ttyp m.Archive
-	// /searchResult.Each(reflect.TypeOf(ttyp))
 
 	var t m.ListArchive
 	var listArchive []m.ListArchive

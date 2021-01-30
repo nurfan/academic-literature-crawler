@@ -22,8 +22,14 @@ type ArchiveIndex struct {
 func (c *ArchiveIndex) Create(ctx context.Context, platform string, content m.Record) (resp *elastic.IndexResponse, err error) {
 	dc := content.Metadata.Dc
 	dc.Identifier = append(dc.Identifier, content.Header.Identifier)
+	var relation string
 
 	uid := guuid.New().String()
+
+	if platform == "OJS" {
+		tmpStr := mergeDC(dc.Relation)
+		relation = strings.ReplaceAll(tmpStr, "/view/", "/download/")
+	}
 
 	doc := m.Archive{
 		ArchiveID:     uid,
@@ -42,7 +48,7 @@ func (c *ArchiveIndex) Create(ctx context.Context, platform string, content m.Re
 		Rights:        mergeDC(dc.Rights),
 		Format:        mergeDC(dc.Format),
 		Source:        mergeDC(dc.Source),
-		Relation:      mergeDC(dc.Relation),
+		Relation:      relation,
 		Coverage:      mergeDC(dc.Coverage),
 	}
 

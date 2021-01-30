@@ -8,5 +8,10 @@
       "path": "/v1/archive",
       "method": "GET",
       "endpoint_filter": "search_archive"
+    },
+    {
+      "path": "/v1/archive/:ID",
+      "method": "GET",
+      "endpoint_filter": "detail_archive"
     }
 ]

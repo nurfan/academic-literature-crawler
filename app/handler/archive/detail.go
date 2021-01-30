@@ -1,66 +1,84 @@
 package handler
 
-// import (
-// 	"context"
-// 	"fmt"
-// 	"log"
-// 	"net/http"
-// 	"reflect"
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
 
-// 	"github.com/labstack/echo/v4"
-// 	"github.com/nurfan/academic-literature-crawler/app/repo"
-// 	m "github.com/nurfan/academic-literature-crawler/constants/model"
-// 	"github.com/olivere/elastic/v7"
-// )
+	"github.com/labstack/echo/v4"
+	"github.com/nurfan/academic-literature-crawler/app/repo"
+	m "github.com/nurfan/academic-literature-crawler/constants/model"
+	"github.com/olivere/elastic/v7"
+)
 
-// // DetailArchive initiate object
-// type DetailArchive struct {
-// 	elastic *elastic.Client
-// 	arcRepo repo.ArchiveElasticRepo
-// }
+// DetailArchive initiate object
+type DetailArchive struct {
+	elastic *elastic.Client
+	arcRepo repo.ArchiveElasticRepo
+}
 
-// // Handle : handle request for this action
-// func (da *DetailArchive) Handle(c echo.Context) (err error) {
-// 	ctx := c.Request().Context()
+// Handle : handle request for this action
+func (ha *DetailArchive) Handle(c echo.Context) (err error) {
+	// create context
+	ctx := c.Request().Context()
 
-// 	idDoc := c.Param("idDoc")
+	archiveID := c.Param("ID")
+	log.Println(archiveID)
 
-// 	// Search with a term query
-// 	//termQuery := elastic.NewMultiMatchQuery("Soil", "title", "creator", "subject", "description", "publisher", "source").Type("phrase_prefix")
-// 	searchResult, err := da.elastic.Search().
-// 		Index("archives").
-// 		Type("_doc").
-// 		Pretty(true).
-// 		Do(context.Background())
+	// Search with a term query
+	termQuery := elastic.NewMultiMatchQuery(archiveID, "archive_id").Type("phrase_prefix")
+	searchResult, err := ha.elastic.Search().
+		Index("archives").
+		Query(termQuery).
+		Pretty(true).
+		Do(ctx)
 
-// 	if err != nil {
-// 		// Handle error
-// 		log.Println(err)
-// 	}
+	if err != nil {
+		switch {
+		case elastic.IsNotFound(err):
+			panic(fmt.Sprintf("Document not found: %v", err))
+		case elastic.IsTimeout(err):
+			panic(fmt.Sprintf("Timeout retrieving document: %v", err))
+		case elastic.IsConnErr(err):
+			panic(fmt.Sprintf("Connection problem: %v", err))
+		default:
+			// Some other kind of error
+			panic(err)
+		}
+	}
 
-// 	// searchResult is of type SearchResult and returns hits, suggestions,
-// 	// and all kinds of other information from Elasticsearch.
-// 	fmt.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
+	var result m.APIResponse
+	var t m.Archive
 
-// 	// Each is a convenience function that iterates over hits in a search result.
-// 	// It makes sure you don't need to check for nil values in the response.
-// 	// However, it ignores errors in serialization. If you want full control
-// 	// over iterating the hits, see below.
-// 	var ttyp m.Archive
-// 	for _, item := range searchResult.Each(reflect.TypeOf(ttyp)) {
-// 		t := item.(m.Archive)
-// 		log.Println(t)
-// 	}
-// 	// TotalHits is another convenience function that works even when something goes wrong.
-// 	fmt.Printf("Found a total of %d tweets\n", searchResult.TotalHits())
+	if searchResult.TotalHits() > 0 {
 
-// 	return c.JSON(http.StatusCreated, "Tested Create Article PASS")
-// }
+		for _, hit := range searchResult.Hits.Hits {
+			err := json.Unmarshal(hit.Source, &t)
+			if err == nil {
+				log.Println(err)
+			}
+		}
 
-// //NewDetailArchive setup initiate object
-// func NewDetailArchive(elasticConn *elastic.Client) *DetailArchive {
-// 	return &DetailArchive{
-// 		elastic: elasticConn,
-// 		arcRepo: repo.NewArchiveIndex(elasticConn),
-// 	}
-// }
+		result.Code = http.StatusOK
+		result.Message = http.StatusText(result.Code)
+		result.Data = map[string]interface{}{
+			"archive": t,
+		}
+
+		return c.JSON(result.Code, result)
+	}
+
+	result.Code = http.StatusNotFound
+	result.Message = http.StatusText(result.Code)
+
+	return c.JSON(result.Code, result)
+}
+
+// NewDetailArchive setup initiate object
+func NewDetailArchive(elasticConn *elastic.Client) *DetailArchive {
+	return &DetailArchive{
+		elastic: elasticConn,
+		arcRepo: repo.NewArchiveIndex(elasticConn),
+	}
+}
