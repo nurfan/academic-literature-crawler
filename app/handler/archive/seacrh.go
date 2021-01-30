@@ -21,7 +21,7 @@ type SearchArchive struct {
 
 // Handle : handle request for this action
 func (ha *SearchArchive) Handle(c echo.Context) (err error) {
-	var pageNUmber, pageSize int = 0, 15
+	var currentPage, pageSize, from int = 0, 15, 0
 
 	// create context
 	ctx := c.Request().Context()
@@ -29,19 +29,24 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 	key := c.QueryParam("keyword")
 	page := c.QueryParam("page")
 
-	pageNUmber, err = strconv.Atoi(page)
+	currentPage, err = strconv.Atoi(page)
 	if err != nil {
-		pageNUmber = 0
+		log.Println(err)
+		currentPage = 1
 	}
 
-	pageNUmber = (pageNUmber + 1) * pageSize
+	log.Println(currentPage)
+
+	if currentPage >= 1 {
+		from = (currentPage * pageSize)
+	}
 
 	// Search with a term query
 	termQuery := elastic.NewMultiMatchQuery(key, "title", "creator", "subject", "publisher", "source", "platform").Type("phrase_prefix")
 	searchResult, err := ha.elastic.Search().
 		Index("archives").
 		Query(termQuery).
-		From(pageNUmber).Size(15).
+		From(from).Size(15).
 		Pretty(true).
 		Do(ctx)
 
@@ -85,6 +90,7 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 		result.Data = map[string]interface{}{
 			"response_time": searchResult.TookInMillis,
 			"total_result":  searchResult.TotalHits(),
+			"current_page":  currentPage,
 			"archive":       listArchive,
 		}
 
