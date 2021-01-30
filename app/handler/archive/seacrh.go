@@ -89,8 +89,9 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 		result.Message = http.StatusText(result.Code)
 		result.Data = map[string]interface{}{
 			"response_time": searchResult.TookInMillis,
-			"total_result":  searchResult.TotalHits(),
 			"current_page":  currentPage,
+			"total_page":    (searchResult.TotalHits() / int64(pageSize)),
+			"total_result":  searchResult.TotalHits(),
 			"archive":       listArchive,
 		}
 
