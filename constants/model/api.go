@@ -54,9 +54,3 @@ type DetailOJSResponse struct {
 	Source        string `json:"source"`
 	Relation      string `json:"relation"`
 }
-
-type DetailSlimsResponse struct {
-}
-
-type DetailEprintsResponse struct {
-}

@@ -23,6 +23,7 @@ type Slims struct {
 func (s *Slims) GetBookInfo(idBook string) (*m.SlimsDetailBookResponse, error) {
 
 	result, err := s.sendRequest(s.getFullURLBookInfo(idBook))
+
 	if err != nil {
 		return nil, err
 	}
@@ -44,14 +45,14 @@ func (s *Slims) getFullURLBookInfo(idBook string) string {
 	add("inXML", "true")
 	add("id", idBook)
 
-	URL := strings.Join([]string{s.Host, "?", strings.Join(array, "&")}, "")
+	URL := strings.Join([]string{s.Host, "/index.php", "?", strings.Join(array, "&")}, "")
 
 	return URL
 }
 
 // sendRequest get oai file from repository
 func (s *Slims) sendRequest(url string) (*m.SlimsDetailBookResponse, error) {
-	var result m.SlimsDetailBookResponse
+
 	log.Println("Slims HOST : ", url)
 	resp, _, err := gorequest.New().Get(url).End()
 
@@ -60,12 +61,10 @@ func (s *Slims) sendRequest(url string) (*m.SlimsDetailBookResponse, error) {
 		return nil, err[0]
 	}
 
-	bodyBytes, errr := ioutil.ReadAll(resp.Body)
-	if errr != nil {
-		log.Fatal(errr)
-	}
-
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	result := m.SlimsDetailBookResponse{}
 	xml.Unmarshal(bodyBytes, &result)
+
 	return &result, nil
 }
 
