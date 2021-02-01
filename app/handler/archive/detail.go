@@ -85,7 +85,7 @@ func (ha *DetailArchive) mappingSlimsResponse(book *m.SlimsDetailBookResponse) m
 	}
 
 	result.Title = book.Mods.TitleInfo.Title
-	result.Title = os.Getenv("SLIMS_HOST") + os.Getenv("SLIMS_PATH_IMG") + book.Mods.Image
+	result.Cover = os.Getenv("SLIMS_HOST") + os.Getenv("SLIMS_PATH_IMG") + book.Mods.Image
 	result.Author = author
 	result.PublishDate = book.Mods.OriginInfo.DateIssued
 	result.Publisher = book.Mods.OriginInfo.Publisher
