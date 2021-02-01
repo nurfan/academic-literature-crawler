@@ -8,26 +8,29 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/nurfan/academic-literature-crawler/app/repo"
 	m "github.com/nurfan/academic-literature-crawler/constants/model"
+	s "github.com/nurfan/academic-literature-crawler/constants/state"
 	"github.com/olivere/elastic/v7"
+	"github.com/parnurzeal/gorequest"
 )
 
-// DetailArchive initiate object
-type DetailArchive struct {
+// Journal initiate object
+type Journal struct {
 	elastic *elastic.Client
 	arcRepo repo.ArchiveElasticRepo
 }
 
 // Handle : handle request for this action
-func (ha *DetailArchive) Handle(c echo.Context) (err error) {
+func (j *Journal) Handle(c echo.Context) (err error) {
 	var result m.APIResponse
 	ctx := c.Request().Context()
 
 	archiveID := c.Param("ID")
-	searchResult, err := ha.arcRepo.SearchByArchiveID(ctx, archiveID)
+	log.Println(archiveID)
+
+	searchResult, err := j.arcRepo.SearchByArchiveID(ctx, archiveID)
 
 	var archive m.Archive
 	if searchResult.TotalHits() > 0 {
-
 		for _, hit := range searchResult.Hits.Hits {
 			err := json.Unmarshal(hit.Source, &archive)
 			if err == nil {
@@ -35,13 +38,15 @@ func (ha *DetailArchive) Handle(c echo.Context) (err error) {
 			}
 		}
 
-		result.Code = http.StatusOK
-		result.Message = http.StatusText(result.Code)
-		result.Data = map[string]interface{}{
-			"archive": archive,
-		}
+		if archive.Platform == s.OJS {
+			resp, body, errs := gorequest.New().Get(archive.Relation).End()
 
-		return c.JSON(result.Code, result)
+			if errs != nil {
+				log.Println(errs)
+			}
+
+			return c.Blob(resp.StatusCode, "application/pdf", []byte(body))
+		}
 	}
 
 	result.Code = http.StatusNotFound
@@ -50,9 +55,9 @@ func (ha *DetailArchive) Handle(c echo.Context) (err error) {
 	return c.JSON(result.Code, result)
 }
 
-// NewDetailArchive setup initiate object
-func NewDetailArchive(elasticConn *elastic.Client) *DetailArchive {
-	return &DetailArchive{
+// NewJournal setup initiate object
+func NewJournal(elasticConn *elastic.Client) *Journal {
+	return &Journal{
 		elastic: elasticConn,
 		arcRepo: repo.NewArchiveIndex(elasticConn),
 	}

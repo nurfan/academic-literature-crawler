@@ -13,5 +13,10 @@
       "path": "/v1/archive/:ID",
       "method": "GET",
       "endpoint_filter": "detail_archive"
+    },
+    {
+      "path": "/v1/archive/journal/:ID",
+      "method": "GET",
+      "endpoint_filter": "journal_archive"
     }
 ]

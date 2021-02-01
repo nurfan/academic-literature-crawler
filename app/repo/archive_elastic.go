@@ -2,7 +2,9 @@ package repo
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	guuid "github.com/google/uuid"
@@ -67,7 +69,72 @@ func (c *ArchiveIndex) Create(ctx context.Context, platform string, content m.Re
 	}
 
 	return
+}
 
+// Search for search archive
+func (c *ArchiveIndex) Search(ctx context.Context, page, key string) (*elastic.SearchResult, int, error) {
+	var currentPage, from, pageSize int = 0, 0, 10
+
+	currentPage, err := strconv.Atoi(page)
+	if err != nil {
+		log.Println(err)
+		currentPage = 1
+	}
+
+	if currentPage > 1 {
+		from = (currentPage * pageSize) - 1
+	}
+
+	//Search with a term query
+	termQuery := elastic.NewMultiMatchQuery(key, "title", "creator", "subject", "publisher", "platform").Type("phrase_prefix")
+	searchResult, err := c.db.Search().
+		Index("archives").
+		Query(termQuery).
+		From(from).Size(pageSize).
+		Do(ctx)
+
+	if err != nil {
+		switch {
+		case elastic.IsNotFound(err):
+			panic(fmt.Sprintf("Document not found: %v", err))
+		case elastic.IsTimeout(err):
+			panic(fmt.Sprintf("Timeout retrieving document: %v", err))
+		case elastic.IsConnErr(err):
+			panic(fmt.Sprintf("Connection problem: %v", err))
+		default:
+			// Some other kind of error
+			panic(err)
+		}
+	}
+
+	return searchResult, currentPage, nil
+}
+
+// SearchByArchiveID for search archive
+func (c *ArchiveIndex) SearchByArchiveID(ctx context.Context, key string) (*elastic.SearchResult, error) {
+
+	//Search with a term query
+	termQuery := elastic.NewMultiMatchQuery(key, "archive_id").Type("phrase_prefix")
+	searchResult, err := c.db.Search().
+		Index("archives").
+		Query(termQuery).
+		Do(ctx)
+
+	if err != nil {
+		switch {
+		case elastic.IsNotFound(err):
+			panic(fmt.Sprintf("Document not found: %v", err))
+		case elastic.IsTimeout(err):
+			panic(fmt.Sprintf("Timeout retrieving document: %v", err))
+		case elastic.IsConnErr(err):
+			panic(fmt.Sprintf("Connection problem: %v", err))
+		default:
+			// Some other kind of error
+			panic(err)
+		}
+	}
+
+	return searchResult, nil
 }
 
 func mergeDC(param []string) (result string) {

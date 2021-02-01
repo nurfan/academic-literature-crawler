@@ -22,7 +22,8 @@ func bindingConn(conn *elastic.Client) {
 		"harvest_archive": h.NewHarvestArchive(conn),
 
 		//archive
-		"search_archive": a.NewSearchArchive(conn),
-		"detail_archive": a.NewDetailArchive(conn),
+		"search_archive":  a.NewSearchArchive(conn),
+		"detail_archive":  a.NewDetailArchive(conn),
+		"journal_archive": a.NewJournal(conn),
 	}
 }

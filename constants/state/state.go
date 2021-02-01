@@ -5,5 +5,5 @@ const (
 	SLIMS   = "SLIMS"
 	EPRINTs = "EPRINTS"
 
-	OAI_SEPARATOR = "|&|"
+	OAI_SEPARATOR = "|"
 )
