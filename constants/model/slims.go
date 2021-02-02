@@ -117,6 +117,9 @@ type SlimsDetailBookResponse struct {
 
 // SlimsBookInformation for
 type SlimsBookInformation struct {
+	ArchiveID           string    `json:"archive_id"`
+	OaiIdentifier       string    `json:"oai_identifier"`
+	Platform            string    `json:"platform"`
 	Title               string    `json:"title"`
 	Cover               string    `json:"cover"`
 	Author              Authority `json:"author"`

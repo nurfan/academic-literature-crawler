@@ -46,7 +46,13 @@ func (ha *DetailArchive) Handle(c echo.Context) (err error) {
 		if archive.Platform == s.SLIMS {
 			bookInfo := ha.getBookInfo(archive)
 			result.Data = map[string]interface{}{
-				"archive": ha.mappingSlimsResponse(bookInfo),
+				"archive": ha.mappingSlimsResponse(archive, bookInfo),
+			}
+		}
+
+		if archive.Platform == s.EPRINTS {
+			result.Data = map[string]interface{}{
+				"archive": ha.mappingEprintsResponse(archive),
 			}
 		}
 
@@ -75,7 +81,7 @@ func (ha *DetailArchive) getBookInfo(book m.Archive) *m.SlimsDetailBookResponse 
 	return info
 }
 
-func (ha *DetailArchive) mappingSlimsResponse(book *m.SlimsDetailBookResponse) m.SlimsBookInformation {
+func (ha *DetailArchive) mappingSlimsResponse(archive m.Archive, book *m.SlimsDetailBookResponse) m.SlimsBookInformation {
 	var result m.SlimsBookInformation
 
 	author := m.Authority{
@@ -84,6 +90,9 @@ func (ha *DetailArchive) mappingSlimsResponse(book *m.SlimsDetailBookResponse) m
 		Role: book.Mods.Name.Role.RoleTerm.Text,
 	}
 
+	result.ArchiveID = archive.ArchiveID
+	result.OaiIdentifier = archive.OaiIdentifier
+	result.Platform = archive.Platform
 	result.Title = book.Mods.TitleInfo.Title
 	result.Cover = os.Getenv("SLIMS_HOST") + os.Getenv("SLIMS_PATH_IMG") + book.Mods.Image
 	result.Author = author
@@ -113,6 +122,44 @@ func (ha *DetailArchive) mappingSlimsResponse(book *m.SlimsDetailBookResponse) m
 
 	result.Locations = location
 
+	return result
+}
+
+func (ha *DetailArchive) mappingEprintsResponse(doc m.Archive) m.DetailEprintsResponse {
+	var result m.DetailEprintsResponse
+	var documents []m.Document
+
+	result.ArchiveID = doc.ArchiveID
+	result.OaiIdentifier = doc.OaiIdentifier
+	result.Platform = doc.Platform
+	result.Title = doc.Title
+	result.Creator = doc.Creator
+	result.Subject = doc.Subject
+	result.Description = doc.Description
+	result.Publisher = doc.Publisher
+	result.Contributor = doc.Contributor
+	result.Date = doc.Date
+	result.Type = doc.Type
+	result.Rights = doc.Rights
+
+	identifiers := strings.Split(doc.Identifier, "|")
+	languages := strings.Split(doc.Language, "|")
+	formats := strings.Split(doc.Format, "|")
+
+	for i := 0; i < len(formats); i++ {
+		fn := strings.Split(identifiers[i], "/")
+		d := m.Document{
+			FileName: fn[len(fn)-1],
+			Language: languages[i],
+			Format:   formats[i],
+			URL:      identifiers[i],
+		}
+
+		documents = append(documents, d)
+	}
+
+	result.DocumentIdentifier = identifiers[len(identifiers)-2]
+	result.Documents = documents
 	return result
 
 }

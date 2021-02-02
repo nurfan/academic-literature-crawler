@@ -34,23 +34,28 @@ type ListArchive struct {
 	Publisher string `json:"publisher"`
 }
 
-// DetailOJSResponse struct
-type DetailOJSResponse struct {
-	ArchiveID     string `json:"archive_id"`
-	OaiIdentifier string `json:"oai_identifier"`
-	Platform      string `json:"platform"`
-	Title         string `json:"title"`
-	Creator       string `json:"creator"`
-	Subject       string `json:"subject"`
-	Description   string `json:"description"`
-	Publisher     string `json:"publisher"`
-	Contributor   string `json:"contributor"`
-	Date          string `json:"date"`
-	Type          string `json:"type"`
-	Identifier    string `json:"identifier"`
-	Language      string `json:"language"`
-	Rights        string `json:"rights"`
-	Format        string `json:"format"`
-	Source        string `json:"source"`
-	Relation      string `json:"relation"`
+// DetailEprintsResponse struct
+type DetailEprintsResponse struct {
+	ArchiveID          string     `json:"archive_id"`
+	OaiIdentifier      string     `json:"oai_identifier"`
+	Platform           string     `json:"platform"`
+	Title              string     `json:"title"`
+	Creator            string     `json:"creator"`
+	Subject            string     `json:"subject"`
+	Description        string     `json:"description"`
+	Publisher          string     `json:"publisher"`
+	Contributor        string     `json:"contributor"`
+	Date               string     `json:"date"`
+	Type               string     `json:"type"`
+	DocumentIdentifier string     `json:"document_identifier"`
+	Documents          []Document `json:"documents"`
+	Rights             string     `json:"rights"`
+}
+
+// Document struct for binding indentifier to document
+type Document struct {
+	FileName string `json:"filename"`
+	Language string `json:"language"`
+	Format   string `json:"format"`
+	URL      string `json:"url"`
 }

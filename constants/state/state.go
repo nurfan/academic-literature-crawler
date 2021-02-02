@@ -3,7 +3,7 @@ package constants
 const (
 	OJS     = "OJS"
 	SLIMS   = "SLIMS"
-	EPRINTs = "EPRINTS"
+	EPRINTS = "EPRINTS"
 
 	OAI_SEPARATOR = "|"
 )

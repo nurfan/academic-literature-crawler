@@ -44,7 +44,7 @@ func (c *OAI) SetRepository(repo string) {
 		c.Request.BaseURL = os.Getenv("OJS_HOST")
 	case s.SLIMS:
 		c.Request.BaseURL = os.Getenv("SLIMS_HOST_OAI")
-	case s.EPRINTs:
+	case s.EPRINTS:
 		c.Request.BaseURL = os.Getenv("EPRINTS_HOST")
 	default:
 		return

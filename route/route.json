@@ -17,6 +17,26 @@
     {
       "path": "/v1/archive/journal/:ID",
       "method": "GET",
-      "endpoint_filter": "journal_archive"
+      "endpoint_filter": "ojs_document"
+    },
+    {
+      "path": "/v1/archive/ojs/:ID",
+      "method": "GET",
+      "endpoint_filter": "detail_archive"
+    },
+    {
+      "path": "/v1/archive/slims/:ID",
+      "method": "GET",
+      "endpoint_filter": "detail_archive"
+    },
+    {
+      "path": "/v1/archive/eprints/:ID",
+      "method": "GET",
+      "endpoint_filter": "detail_archive"
+    },
+    {
+      "path": "/v1/archive/ojs/:ID/document",
+      "method": "GET",
+      "endpoint_filter": "ojs_document"
     }
 ]
