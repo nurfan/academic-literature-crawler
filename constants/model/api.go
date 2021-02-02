@@ -32,6 +32,7 @@ type ListArchive struct {
 	Creator   string `json:"creator"`
 	Subject   string `json:"subject"`
 	Publisher string `json:"publisher"`
+	Link      string `json:"_link"`
 }
 
 // DetailEprintsResponse struct

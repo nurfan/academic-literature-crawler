@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/nurfan/academic-literature-crawler/app/repo"
@@ -39,6 +41,7 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 				if err == nil {
 					log.Println(err)
 				}
+				t.Link = os.Getenv("HOST") + "/api/v1/archive/" + strings.ToLower(t.Platform) + "/" + t.ArchiveID
 				listArchive = append(listArchive, t)
 			}
 
