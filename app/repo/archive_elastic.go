@@ -73,7 +73,7 @@ func (c *ArchiveIndex) Create(ctx context.Context, platform string, content m.Re
 
 // Search for search archive
 func (c *ArchiveIndex) Search(ctx context.Context, platform, page, key string) (*elastic.SearchResult, int, error) {
-	var currentPage, from, pageSize int = 0, 0, 10
+	var currentPage, from, pageSize int = 0, 0, 5
 
 	currentPage, err := strconv.Atoi(page)
 	if err != nil {
