@@ -72,7 +72,7 @@ func (c *ArchiveIndex) Create(ctx context.Context, platform string, content m.Re
 }
 
 // Search for search archive
-func (c *ArchiveIndex) Search(ctx context.Context, page, key string) (*elastic.SearchResult, int, error) {
+func (c *ArchiveIndex) Search(ctx context.Context, platform, page, key string) (*elastic.SearchResult, int, error) {
 	var currentPage, from, pageSize int = 0, 0, 10
 
 	currentPage, err := strconv.Atoi(page)
@@ -86,26 +86,20 @@ func (c *ArchiveIndex) Search(ctx context.Context, page, key string) (*elastic.S
 	}
 
 	//Search with a term query
-	termQuery := elastic.NewMultiMatchQuery(key, "title", "creator", "subject", "publisher", "platform").Type("phrase_prefix")
-	searchResult, err := c.db.Search().
-		Index("archives").
-		Query(termQuery).
-		From(from).Size(pageSize).
-		Do(ctx)
+	termQuery1 := elastic.NewMultiMatchQuery(key, "title", "creator", "subject", "publisher").Type("phrase_prefix")
+	termQuery2 := elastic.NewMatchQuery("platform", platform)
 
-	if err != nil {
-		switch {
-		case elastic.IsNotFound(err):
-			panic(fmt.Sprintf("Document not found: %v", err))
-		case elastic.IsTimeout(err):
-			panic(fmt.Sprintf("Timeout retrieving document: %v", err))
-		case elastic.IsConnErr(err):
-			panic(fmt.Sprintf("Connection problem: %v", err))
-		default:
-			// Some other kind of error
-			panic(err)
-		}
+	search := c.db.Search().Index("archives")
+
+	if platform != "" {
+		qBool := elastic.NewBoolQuery()
+		esQuery := qBool.Must(termQuery1, termQuery2)
+
+		search.Query(esQuery)
+	} else {
+		search.Query(termQuery1)
 	}
+	searchResult, err := search.From(from).Size(pageSize).Do(ctx)
 
 	return searchResult, currentPage, nil
 }

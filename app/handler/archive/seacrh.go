@@ -26,8 +26,9 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	key := c.QueryParam("keyword")
 	page := c.QueryParam("page")
+	platform := c.QueryParam("platform")
 
-	searchResult, currentPage, err := ha.arcRepo.Search(ctx, page, key)
+	searchResult, currentPage, err := ha.arcRepo.Search(ctx, platform, page, key)
 
 	if err == nil {
 		var result m.APIResponse
