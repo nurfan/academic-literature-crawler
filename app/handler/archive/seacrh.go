@@ -30,33 +30,33 @@ func (ha *SearchArchive) Handle(c echo.Context) (err error) {
 
 	searchResult, currentPage, err := ha.arcRepo.Search(ctx, platform, page, key)
 
+	log.Println("errors : ", err)
+
 	if err == nil {
 		var result m.APIResponse
 		var listArchive []m.ListArchive
 
-		if searchResult.TotalHits() > 0 {
-
-			for _, hit := range searchResult.Hits.Hits {
-				var t m.ListArchive
-				err := json.Unmarshal(hit.Source, &t)
-				if err == nil {
-					log.Println(err)
-				}
-				t.Link = os.Getenv("HOST") + "/api/v1/archive/" + strings.ToLower(t.Platform) + "/" + t.ArchiveID
-				listArchive = append(listArchive, t)
+		for _, hit := range searchResult.Hits.Hits {
+			var t m.ListArchive
+			err := json.Unmarshal(hit.Source, &t)
+			if err == nil {
+				log.Println(err)
 			}
-
-			result.Code = http.StatusOK
-			result.Message = http.StatusText(result.Code)
-			result.Data = map[string]interface{}{
-				"response_time": searchResult.TookInMillis,
-				"current_page":  currentPage,
-				"total_result":  searchResult.TotalHits(),
-				"archive":       listArchive,
-			}
-
-			return c.JSON(result.Code, result)
+			t.Link = os.Getenv("HOST") + "/api/v1/archive/" + strings.ToLower(t.Platform) + "/" + t.ArchiveID
+			listArchive = append(listArchive, t)
 		}
+
+		result.Code = http.StatusOK
+		result.Message = http.StatusText(result.Code)
+		result.Data = map[string]interface{}{
+			"response_time": searchResult.TookInMillis,
+			"current_page":  currentPage,
+			"total_result":  searchResult.TotalHits(),
+			"archive":       listArchive,
+		}
+
+		return c.JSON(result.Code, result)
+
 	}
 
 	result.Code = http.StatusNotFound
