@@ -40,7 +40,7 @@ func (ha *DetailArchive) Handle(c echo.Context) (err error) {
 		}
 
 		result.Data = map[string]interface{}{
-			"archive": archive,
+			"archive": ha.mappingOJSResponse(archive),
 		}
 
 		if archive.Platform == s.SLIMS {
@@ -161,6 +161,17 @@ func (ha *DetailArchive) mappingEprintsResponse(doc m.Archive) m.DetailEprintsRe
 	result.DocumentIdentifier = identifiers[len(identifiers)-2]
 	result.Documents = documents
 	return result
+}
+
+func (ha *DetailArchive) mappingOJSResponse(doc m.Archive) m.Archive {
+
+	relations := strings.Split(doc.Relation, "|")
+
+	if len(relations) > 0 {
+		doc.Relation = relations[0]
+	}
+
+	return doc
 
 }
 
